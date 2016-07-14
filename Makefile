@@ -1,12 +1,12 @@
 CXX ?= g++
 CC ?= gcc
-CFLAGS = -Wall -Wconversion -O3 -fPIC
+CFLAGS = -Wall -Wconversion -O3 -fPIC -std=c++11
 LIBS = blas/blas.a
 SHVER = 3
 OS = $(shell uname)
 #LIBS = -lblas
 
-all: train predict
+all: train predict read_data
 
 lib: linear.o tron.o blas/blas.a
 	if [ "$(OS)" = "Darwin" ]; then \
@@ -18,6 +18,9 @@ lib: linear.o tron.o blas/blas.a
 
 train: tron.o linear.o train.c blas/blas.a
 	$(CXX) $(CFLAGS) -o train train.c tron.o linear.o $(LIBS)
+
+read_data: tron.o linear.o read_data.c blas/blas.a
+	$(CXX) $(CFLAGS) -o read_data read_data.c tron.o linear.o $(LIBS)
 
 predict: tron.o linear.o predict.c blas/blas.a
 	$(CXX) $(CFLAGS) -o predict predict.c tron.o linear.o $(LIBS)
