@@ -237,11 +237,11 @@ void read_problem(const char *filename)
 		sprintf(numstr, "%d", i);
 		char tmp_file_feas[200];
 		std::strcpy(tmp_file_feas, dirname);
-		std::strcat(tmp_file_feas, "/features_");
+		std::strcat(tmp_file_feas, "/features.mat_");
 		std::strcat(tmp_file_feas, numstr);
 		char tmp_file_labs[200];
 		std::strcpy(tmp_file_labs, dirname);
-		std::strcat(tmp_file_labs, "/labels_");
+		std::strcat(tmp_file_labs, "/labels.mat_");
 		std::strcat(tmp_file_labs, numstr);
 		tmp_images.save(tmp_file_feas, arma_binary);
 		tmp_labels.save(tmp_file_labs, arma_binary);
