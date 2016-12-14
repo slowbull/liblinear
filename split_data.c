@@ -63,7 +63,7 @@ int main(int argc, char **argv)
 
 	if(argc!=3){
 		printf("Read data from libsvm data, and partition and save in distributed files. \n");
-		printf("usage of this file: ./split_data /pathto/data num_partitions\n");
+		printf("usage of this file: ./split_data /pathto/data num_partitions dense?\n");
 		return 0;
 	}
 	char input_file_name[1024];
@@ -187,6 +187,13 @@ void read_problem(const char *filename)
 	printf("l: %d n:%d ele:%d \n", prob.l, prob.n, elements);
 
 
+	 // shuffle vector
+	std::vector<int> randperm(prob.l,0);
+	for(int i=0; i<prob.l; i++){
+		randperm[i] = i;
+	}
+	std::random_shuffle(randperm.begin(), randperm.end());
+
 	int ii=0;
 	int count=0;
 	std::vector<int> tmp_loc;
@@ -197,8 +204,9 @@ void read_problem(const char *filename)
 			if(ii>=prob.l) break;	
 	   	 }
 		else{
-			tmp_loc.push_back(ii);
 			tmp_loc.push_back(x_space[i].index-1);
+			tmp_loc.push_back(randperm[ii]);
+			//tmp_loc.push_back(ii);
 			tmp_val.push_back(x_space[i].value);
 			count++;
 		}
@@ -209,13 +217,33 @@ void read_problem(const char *filename)
 	my_loc.reshape(2,count);
 	vec my_val = conv_to<vec>::from(tmp_val);
 	std::vector<double>().swap(tmp_val); // release memory
-    sp_mat my_x(my_loc,my_val);
+    sp_mat my_x(my_loc,my_val); // n*l because sp_mat in armadillo is based on CSC.
 	
+
+	std::vector<double> vec_y(prob.y,prob.y+prob.l);
+	std::vector<int> tmp_loc_y;
+	std::vector<double> tmp_val_y;
+	for(i=0; i<prob.l; i++){
+		tmp_loc_y.push_back(0);
+		tmp_loc_y.push_back(randperm[i]);
+		tmp_val_y.push_back(vec_y[i]);
+	}
+
+	umat my_loc_y = conv_to<Mat<uword>>::from(tmp_loc_y);
+	std::vector<int>().swap(tmp_loc_y); // release memory
+	my_loc_y.reshape(2,prob.l);
+	vec my_val_y = conv_to<vec>::from(tmp_val_y);
+	std::vector<double>().swap(tmp_val_y); // release memory
+    sp_mat my_y(my_loc_y,my_val_y); // n*l because sp_mat in armadillo is based on CSC.
+	my_y = my_y.t();
 	
+	/*
 	std::vector<double> vec_y(prob.y,prob.y+prob.l);
 	mat tmp = conv_to<mat>::from(vec_y);
 	std::vector<double>().swap(vec_y); // release memory
 	sp_mat my_y(tmp);
+	*/
+
 
 	int num = my_y.n_rows;
 	printf("num of data %d \n", num);
@@ -230,8 +258,8 @@ void read_problem(const char *filename)
 	for(int i=1; i<=workers; i++){
 		int left = (i-1)*data_per_node;
 		int right = i*data_per_node > num ? num : i*data_per_node;
-		sp_mat tmp_images = my_x.rows(left,right-1); 
-		sp_mat tmp_labels = my_y.rows(left,right-1); 
+		sp_mat tmp_images = my_x.cols(left, right-1); 
+		sp_mat tmp_labels = my_y.rows(left, right-1); 
 		printf(" worker %d  num of data %d\n", i, right-left);
 		char numstr[21];
 		sprintf(numstr, "%d", i);

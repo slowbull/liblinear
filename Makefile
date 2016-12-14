@@ -1,6 +1,6 @@
 CXX ?= g++
 CC ?= gcc
-CFLAGS = -Wall -Wconversion -O3 -fPIC -std=c++11
+CFLAGS = -Wall -Wconversion -O3 -fPIC -std=c++11 
 LIBS = blas/blas.a
 SHVER = 3
 OS = $(shell uname)
@@ -23,7 +23,7 @@ read_data: tron.o linear.o read_data.c blas/blas.a
 	$(CXX) $(CFLAGS) -o read_data read_data.c tron.o linear.o $(LIBS)
 
 split_data: tron.o linear.o split_data.c blas/blas.a
-	$(CXX) $(CFLAGS) -o split_data split_data.c tron.o linear.o $(LIBS)
+	$(CXX) $(CFLAGS) -o split_data split_data.c tron.o linear.o $(LIBS) -larmadillo
 
 predict: tron.o linear.o predict.c blas/blas.a
 	$(CXX) $(CFLAGS) -o predict predict.c tron.o linear.o $(LIBS)
