@@ -63,7 +63,7 @@ int main(int argc, char **argv)
 
 	if(argc!=3){
 		printf("Read data from libsvm data, and partition and save in distributed files. \n");
-		printf("usage of this file: ./split_data /pathto/data num_partitions dense?\n");
+		printf("usage of this file: ./split_data /pathto/data num_partitions\n");
 		return 0;
 	}
 	char input_file_name[1024];
